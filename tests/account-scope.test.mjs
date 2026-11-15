@@ -1,0 +1,30 @@
+import {test} from 'node:test';
+import assert from 'node:assert/strict';
+import {applyEvents,cleanRecords} from '../src/core/model.js';
+import {mergeArchive,readConversationJSON} from '../src/core/archive-import.js';
+import {conversationExport} from '../src/core/conversation-export.js';
+const settings={enabled:true,consent:true,retentionDays:30};
+const base={event:'snapshot',platform:'facebook',conversationId:'shared',messageId:'same',kind:'text',text:'first'};
+const a='a'.repeat(64),b='b'.repeat(64);
+test('same message identifiers from distinct accounts never merge or cross-recall',()=>{
+ let records=applyEvents([], [{...base,accountScope:a},{...base,accountScope:b,text:'second'},base],settings);
+ assert.equal(records.length,3);
+ records=applyEvents(records,[{...base,event:'recall',accountScope:b,text:''}],settings);
+ assert.equal(records.filter(r=>r.recalledAt).length,1);
+ assert.equal(records.find(r=>r.recalledAt).text,'second');
+ assert.equal(cleanRecords(records,settings).length,3);
+ const restored=mergeArchive([],records);
+ assert.equal(restored.length,3);
+ assert.equal(mergeArchive(restored,records).length,3);
+ const file=JSON.parse(conversationExport(records,'facebook','shared','json','vi',b).content);
+ assert.equal(file.messages.length,1);assert.equal(file.messages[0].text,'second');
+ assert.equal(readConversationJSON(file)[0].accountScope,b);
+});
+test('account filter separates legacy records and supports full-text search within one account',async()=>{
+ const {filterRecords}=await import('../src/core/model.js');
+ const records=[{accountScope:a,recalledAt:1,text:'invoice'},{accountScope:b,recalledAt:2,text:'invoice'},{recalledAt:3,text:'invoice'}];
+ assert.equal(filterRecords(records,{account:a,query:'invoice'}).length,1);
+ assert.equal(filterRecords(records,{account:'legacy'}).length,1);
+ assert.equal(filterRecords(records,{account:'all'}).length,3);
+ assert.equal(filterRecords(records,{account:a,query:'missing'}).length,0);
+});

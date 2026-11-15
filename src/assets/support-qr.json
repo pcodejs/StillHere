@@ -1,0 +1,16 @@
+{
+  "bank": "MB Bank",
+  "bin": "970422",
+  "account": "192198",
+  "accountHolder": "NGUYEN XUAN PHU",
+  "amount": null,
+  "memo": "UNG HO StillHere",
+  "source": "Locally generated EMV VietQR payload with publisher-provided recipient",
+  "payload": "00020101021138500010A0000007270120000697042201061921980208QRIBFTTA53037045802VN62200816UNG HO StillHere6304F066",
+  "verifiedSizes": [
+    512,
+    240,
+    200
+  ],
+  "note": "Account holder supplied by owner; QR decode validates encoded account, not bank ownership."
+}

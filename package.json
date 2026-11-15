@@ -1,0 +1,28 @@
+{
+  "name": "stillhere-extension",
+  "version": "0.7.8",
+  "private": true,
+  "type": "module",
+  "description": "Local encrypted archive of previously rendered Zalo Web and Facebook messages",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "node tests/browser.mjs",
+    "check": "node scripts/check.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "esbuild": "^0.25.12",
+    "jsqr": "^1.4.0",
+    "pngjs": "^7.0.0",
+    "qrcode": "^1.5.4"
+  },
+  "dependencies": {
+    "@fontsource/be-vietnam-pro": "^5.3.0",
+    "@mantine/core": "^9.8.0",
+    "@mantine/hooks": "^9.8.0",
+    "@tabler/icons-react": "^3.51.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  }
+}

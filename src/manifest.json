@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "StillHere – Unsend Message Viewer",
+  "version": "0.7.8",
+  "minimum_chrome_version": "120",
+  "description": "Xem lại tin đã gỡ trên Zalo và Facebook từ nội dung được lưu trước khi thu hồi. Mã hoá và lưu cục bộ trên thiết bị.",
+  "permissions": [
+    "storage",
+    "alarms",
+    "scripting"
+  ],
+  "optional_host_permissions": [
+    "https://chat.zalo.me/*",
+    "https://www.facebook.com/*",
+    "https://facebook.com/*",
+    "https://web.facebook.com/*",
+    "https://www.messenger.com/*",
+    "https://messenger.com/*",
+    "https://*.zadn.vn/*",
+    "https://*.zdn.vn/*",
+    "https://*.dlfl.vn/*",
+    "https://*.flchat.vn/*",
+    "https://api.zalo.me/*",
+    "https://*.fbcdn.net/*",
+    "https://cdn.fbsbx.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html?popup=1",
+    "default_title": "StillHere – Unsend Message Viewer",
+    "default_icon": {
+      "16": "icons/16.png",
+      "32": "icons/32.png"
+    }
+  },
+  "icons": {
+    "16": "icons/16.png",
+    "32": "icons/32.png",
+    "48": "icons/48.png",
+    "128": "icons/128.png"
+  },
+  "options_ui": {
+    "page": "popup.html?settings=1",
+    "open_in_tab": true
+  },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; object-src 'none'; connect-src https://*.zadn.vn https://*.zdn.vn https://*.dlfl.vn https://*.flchat.vn https://api.zalo.me https://*.fbcdn.net https://cdn.fbsbx.com; img-src 'self' data: blob: https://*.zadn.vn https://*.zdn.vn; media-src 'self' blob:; style-src 'self' 'unsafe-inline'; font-src 'self'; base-uri 'none'; form-action 'none'"
+  },
+  "short_name": "StillHere"
+}

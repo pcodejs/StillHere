@@ -1,0 +1,7 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {safePreferences,sealDraft,openDraft} from '../src/core/preferences.js';
+test('feedback draft is encrypted, expires after 30 days and never retains send consent',async()=>{const key=await crypto.subtle.generateKey({name:'AES-GCM',length:256},false,['encrypt','decrypt']);const value={category:'bug',message:'Private feedback example',email:'test@example.test',consent:true};const vault=await sealDraft(value,key,1000);assert(!JSON.stringify(vault).includes(value.message));assert.deepEqual(await openDraft(vault,key,1001),{category:'bug',message:value.message,email:value.email});assert.equal((await openDraft(vault,key,31*86400000)).message,'');await assert.rejects(openDraft({...vault,data:vault.data.slice(0,-4)+'AAAA'},key));});
+test('UI preferences exclude search text and invalid filter values',()=>{assert.deepEqual(safePreferences({language:'en',type:'group',who:'self',query:'private text'}),{language:'en',type:'group',who:'self',kind:'all',pinnedOnly:false});assert.deepEqual(safePreferences({language:'xx',type:'bad',who:'bad'}),{language:'vi',type:'all',who:'all',kind:'all',pinnedOnly:false});});
+
+test('content and important filters survive sanitization without coercing invalid values',()=>{assert.equal(safePreferences({kind:'video',pinnedOnly:true}).kind,'video');assert.equal(safePreferences({pinnedOnly:true}).pinnedOnly,true);assert.equal(safePreferences({kind:'bad',pinnedOnly:'true'}).kind,'all');assert.equal(safePreferences({pinnedOnly:'true'}).pinnedOnly,false);});
