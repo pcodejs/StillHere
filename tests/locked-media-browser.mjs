@@ -60,39 +60,14 @@ try {
     document.body.prepend(header);
   });
 
-  const video = await zalo.evaluate(async () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 160;
-    canvas.height = 90;
-    const brush = canvas.getContext('2d');
-    brush.fillStyle = '#0643d7';
-    brush.fillRect(0, 0, canvas.width, canvas.height);
-    const stream = canvas.captureStream(10);
-    const recorder = new MediaRecorder(stream, {mimeType: 'video/webm'});
-    const parts = [];
-    const finished = new Promise(resolve => { recorder.onstop = resolve; });
-    recorder.ondataavailable = event => parts.push(event.data);
-    recorder.start();
-    let frame = 0;
-    const drawing = setInterval(() => {
-      brush.fillStyle = ++frame % 2 ? '#0643d7' : '#42c4ee';
-      brush.fillRect(0, 0, canvas.width, canvas.height);
-    }, 50);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    recorder.stop();
-    await finished;
-    clearInterval(drawing);
-    stream.getTracks().forEach(track => track.stop());
-    const bytes = new Uint8Array(await new Blob(parts, {type: 'video/webm'}).arrayBuffer());
-    return btoa(String.fromCharCode(...bytes));
-  });
+  const video = (await readFile('tests/fixtures/locked-video.mp4')).toString('base64');
   const image = (await readFile('src/icons/128.png')).toString('base64');
   const gif = (await readFile('tests/fixtures/animated.gif')).toString('base64');
   const fixtures = {
     'https://photo.zadn.vn/locked-image.png': {data: image, mime: 'image/png'},
     'https://sticker.zadn.vn/locked-sticker.png': {data: image, mime: 'image/png'},
     'https://photo.zadn.vn/locked-animation.gif': {data: gif, mime: 'image/gif'},
-    'https://file.dlfl.vn/locked-video.webm': {data: video, mime: 'video/webm'},
+    'https://file.dlfl.vn/locked-video.mp4': {data: video, mime: 'video/mp4'},
   };
   // Replace only these synthetic CDN responses. Capture, validation, encryption and storage are production code.
   await worker.evaluate(fixtures => {
@@ -188,8 +163,20 @@ try {
   })).toBe(true);
   await popup.getByRole('button',{name:'Phát video',exact:true}).click();
   await expect.poll(()=>player.evaluate(video=>video.currentTime)).toBeGreaterThan(0);
+  expect(await player.evaluate(video=>video.controls)).toBe(false);
+  await popup.getByRole('button',{name:'Tạm dừng',exact:true}).click();
+  await expect.poll(()=>player.evaluate(video=>video.paused)).toBe(true);
+  const seek=popup.getByRole('slider',{name:'Vị trí phát',exact:true});
+  await seek.focus();await seek.press('Home');await seek.press('ArrowRight');
+  await expect.poll(()=>player.evaluate(video=>video.currentTime)).toBeGreaterThan(0);
+  await popup.getByRole('button',{name:'Tắt tiếng',exact:true}).click();
+  expect(await player.evaluate(video=>video.muted)).toBe(true);
+  await popup.getByRole('button',{name:'Bật tiếng',exact:true}).click();
+  expect(await player.evaluate(video=>video.muted)).toBe(false);
   await popup.getByRole('button',{name:'Xem video lớn',exact:true}).click();
   await expect(popup.getByRole('dialog').locator('video')).toBeVisible();
+  await popup.getByRole('dialog').getByRole('button',{name:'Phát video',exact:true}).click();
+  await expect.poll(()=>popup.getByRole('dialog').locator('video').evaluate(video=>video.currentTime)).toBeGreaterThan(0);
   await popup.evaluate(()=>{window.addEventListener('keyup',event=>{if(event.key==='Escape')window.__overlayEscapeKeyupCancelled=event.defaultPrevented;},true);});
   await popup.keyboard.press('Escape');
   expect(await popup.evaluate(()=>window.__overlayEscapeKeyupCancelled)).toBe(true);

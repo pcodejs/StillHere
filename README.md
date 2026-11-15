@@ -55,7 +55,7 @@ npm run check
 python3 scripts/package.py
 ```
 
-Mở `chrome://extensions`, bật chế độ nhà phát triển, chọn **Tải tiện ích đã giải nén** và chọn thư mục `outputs/go-lai-extension`. Gói tải lên Store là `outputs/stillhere-0.7.8-chrome.zip`.
+Mở `chrome://extensions`, bật chế độ nhà phát triển, chọn **Tải tiện ích đã giải nén** và chọn thư mục `outputs/go-lai-extension`. Gói tải lên Store là `outputs/stillhere-0.7.9-chrome.zip`.
 
 Các bài kiểm thử trình duyệt dùng Playwright Chromium và dữ liệu giả lập:
 

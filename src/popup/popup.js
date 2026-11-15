@@ -1,3 +1,4 @@
+import VideoPlayer from './VideoPlayer.jsx';
 import SettingsIndex from './SettingsIndex.jsx';
 import {SITE_ORIGINS,selectedOrigins} from '../core/platform-access.js';
 import UpdateNotice from './UpdateNotice.jsx';
@@ -28,9 +29,6 @@ import IconPhoto from "@tabler/icons-react/dist/esm/icons/IconPhoto.mjs";
 import IconSticker from "@tabler/icons-react/dist/esm/icons/IconSticker.mjs";
 import IconVideo from "@tabler/icons-react/dist/esm/icons/IconVideo.mjs";
 import IconClock from "@tabler/icons-react/dist/esm/icons/IconClock.mjs";
-import IconArrowsMaximize from "@tabler/icons-react/dist/esm/icons/IconArrowsMaximize.mjs";
-import IconPlayerPlay from "@tabler/icons-react/dist/esm/icons/IconPlayerPlay.mjs";
-import IconPlayerPause from "@tabler/icons-react/dist/esm/icons/IconPlayerPause.mjs";
 import IconGif from "@tabler/icons-react/dist/esm/icons/IconGif.mjs";
 import IconFileDescription from "@tabler/icons-react/dist/esm/icons/IconFileDescription.mjs";
 import IconVolume from "@tabler/icons-react/dist/esm/icons/IconVolume.mjs";
@@ -174,8 +172,6 @@ function Media({ record, index, t, canRetry }) {
   const [expanded, setExpanded] = useState(false);
   const [retrying,setRetrying]=useState(false);
   const [retryError,setRetryError]=useState(false);
-  const videoRef=useRef(null);
-  const [playing,setPlaying]=useState(false);
   useEffect(() => { setError(false); setExpanded(false); }, [url]);
   // GIFs can be delivered as video files; use the cached container type.
   const renderAs=item.mime ? (item.mime.startsWith("video/")?"video":item.mime.startsWith("audio/")?"audio":"image") : item.kind;
@@ -188,17 +184,8 @@ function Media({ record, index, t, canRetry }) {
       {item.cached ? (
         <>
           {renderAs === "video" ? (
-            <video
-              ref={videoRef}
-              src={url || undefined}
-              controls
-              preload="metadata"
-              playsInline
-              onError={() => setError(true)}
-              onLoadedData={() => setError(false)}
-              onPlay={()=>setPlaying(true)}
-              onPause={()=>setPlaying(false)}
-            />
+            <VideoPlayer url={url} t={t} onError={()=>setError(true)} onReady={()=>setError(false)}
+              onExpand={()=>setExpanded(true)}/>
           ) : renderAs === "audio" ? (
             <audio
               src={url || undefined}
@@ -217,21 +204,10 @@ function Media({ record, index, t, canRetry }) {
               </Modal>
             </>
           )}
-          {renderAs === 'video' && url && <><div className="media-controls">
-            <Button className="media-play-video" variant="light" size="xs"
-              leftSection={playing?<IconPlayerPause size={14}/>:<IconPlayerPlay size={14}/>}
-              onClick={async()=>{
-                if(playing)videoRef.current?.pause();
-                else try{await videoRef.current?.play();setError(false);}catch{setError(true);}
-              }}>{t(playing?'pauseVideo':'playVideo')}</Button>
-            <Button className="media-expand-video" variant="subtle" size="xs"
-              leftSection={<IconArrowsMaximize size={14} aria-hidden="true"/>}
-              onClick={()=>{videoRef.current?.pause();setExpanded(true);}}>{t('expandVideo')}</Button></div>
-            <Modal opened={expanded} onClose={()=>setExpanded(false)} title={t('video')}
-              closeButtonProps={{'aria-label':t('closeVideo')}} size="xl" centered>
-              {expanded&&<video className="expanded-video" src={url} controls playsInline preload="metadata" />}
-            </Modal>
-          </>}
+          {renderAs === 'video' && url && <Modal opened={expanded} onClose={()=>setExpanded(false)} title={t('video')}
+            closeButtonProps={{'aria-label':t('closeVideo')}} size="xl" centered>
+            {expanded&&<VideoPlayer url={url} t={t} expanded onError={()=>setError(true)} onReady={()=>setError(false)}/>}
+          </Modal>}
           <p className="muted media-note">
             {t(error ? "mediaError" : item.previewOnly ? "preview" : "cached")}
           </p>
